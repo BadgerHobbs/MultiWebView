@@ -45,9 +45,10 @@ namespace MultiWebView
             config.WebViews = new JArray();
             config.Rows = 1;
             config.Columns = 1;
+            config.ShowGridLines = true;
 
             dynamic webView = new JObject();
-            webView.Url = "https://github.com/BadgerHobbs/";
+            webView.Url = "https://github.com/BadgerHobbs/MultiWebView";
             webView.Row = 1;
             webView.Column = 1;
             config.WebViews.Add(webView);

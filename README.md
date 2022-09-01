@@ -16,12 +16,12 @@ Download or build the latest release, then either create or modify the existing 
       "Column": 1
     },
     {
-      "Url": "https://www.reddit.com/r/ProgrammerHumor/",
+      "Url": "https://www.reddit.com/r/CasualUK/",
       "Row": 1,
       "Column": 2
     },
     {
-      "Url": "https://www.youtube.com/",
+      "Url": "https://stackoverflow.com/",
       "Row": 2,
       "Column": 1
     },
