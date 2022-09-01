@@ -2,7 +2,9 @@
 ![MultiWebViewBanner](https://user-images.githubusercontent.com/23462440/188020773-11165258-13f7-495b-b22a-890085a22a72.png)
 
 # MultiWebView
-MultiWebView is a simple, fast and configurable application for Windows which allows you to display any number of webviews in a single application window.
+MultiWebView is a simple, fast, and configurable application for Windows which allows you to display any number of webviews in a single application window.
+
+![image](https://user-images.githubusercontent.com/23462440/188022719-f9685696-8e09-48f5-af78-49816d6cfcb2.png)
 
 ## Getting Started
 Download or build the latest release, then either create or modify the existing `config.json` file (generated on first launch). Below is an example configuration.
