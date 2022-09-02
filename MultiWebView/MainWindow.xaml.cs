@@ -82,6 +82,12 @@ namespace MultiWebView
 
         public void CreateGridAsync(JObject config)
         {
+            if (config["WebViews"] == null)
+            {
+                MessageBox.Show("WebViews required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Close();
+                return;
+            }
 
             if (config["ShowGridLines"] != null)
             {
