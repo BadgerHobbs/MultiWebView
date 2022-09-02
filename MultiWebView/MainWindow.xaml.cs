@@ -25,7 +25,17 @@ namespace MultiWebView
         {
             InitializeComponent();
 
-            JObject config = LoadConfigFile();
+            JObject config;
+            try
+            {
+                config = LoadConfigFile();
+            }
+            catch
+            {
+                MessageBox.Show("Error parsing config, please validate json format.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Close();
+                return;
+            }
 
             CreateGridAsync(config);
         }
@@ -72,10 +82,62 @@ namespace MultiWebView
 
         public void CreateGridAsync(JObject config)
         {
-            dynamicGrid.ShowGridLines = Boolean.Parse(config["ShowGridLines"].Value<string>());
 
-            int columns = Int32.Parse(config["Columns"].Value<string>());
-            int rows = Int32.Parse(config["Columns"].Value<string>());
+            if (config["ShowGridLines"] != null)
+            {
+                try
+                {
+                    dynamicGrid.ShowGridLines = Boolean.Parse(config["ShowGridLines"].Value<string>());
+                }
+                catch
+                {
+                    MessageBox.Show("ShowGridLines configured must be a bool.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }                
+            }
+            
+            int columns = 0;
+            if (config["Columns"] == null)
+            {
+                MessageBox.Show("Number of colums required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Close();
+                return;
+            }
+            else
+            {
+                try
+                {
+                    columns = Int32.Parse(config["Columns"].Value<string>());
+                }
+                catch
+                {
+                    MessageBox.Show("Number of columns configured must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+            }
+
+            int rows = 0;
+            if (config["Rows"] == null)
+            {
+                MessageBox.Show("Number of rows required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Close();
+                return;
+            }
+            else
+            {
+                try
+                {
+                    rows = Int32.Parse(config["Rows"].Value<string>());
+                }
+                catch
+                {
+                    MessageBox.Show("Number of rows configured must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+            }
 
             // Create Columns
             for (int i = 0; i < columns; i++)
@@ -95,16 +157,107 @@ namespace MultiWebView
             // Create objects
             foreach (JObject webViewConfig in config["WebViews"])
             {
-                String url = webViewConfig["Url"].Value<string>();
-                int row = Int32.Parse(webViewConfig["Row"].Value<string>()) - 1;
-                int column = Int32.Parse(webViewConfig["Column"].Value<string>()) - 1;
+                if (webViewConfig["Url"] == null)
+                {
+                    MessageBox.Show("Url required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+
+                Uri uri;
+                try
+                {
+                    uri = new Uri(webViewConfig["Url"].Value<string>());
+                }
+                catch
+                {
+                    MessageBox.Show("Url configured for webview must be in a valid format.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+
+
+                int row = 0;
+                if (webViewConfig["Row"] == null)
+                {
+                    MessageBox.Show("Row number required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        row = Int32.Parse(webViewConfig["Row"].Value<string>()) - 1;
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Row number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        this.Close();
+                        return;
+                    }
+                }
+
+                int column = 0;
+                if (webViewConfig["Column"] == null)
+                {
+                    MessageBox.Show("Column number required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Close();
+                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        column = Int32.Parse(webViewConfig["Column"].Value<string>()) - 1;
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Column number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        this.Close();
+                        return;
+                    }
+                }
+
+                int rowSpan = 1;
+                if (webViewConfig["RowSpan"] != null)
+                {
+                    try
+                    {
+                        rowSpan = Int32.Parse(webViewConfig["RowSpan"].Value<string>());
+                    }
+                    catch
+                    {
+                        MessageBox.Show("RowSpan number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        this.Close();
+                        return;
+                    }
+                }
+
+                int columnSpan = 1;
+                if (webViewConfig["ColumnSpan"] != null)
+                {
+                    try
+                    {
+                        columnSpan = Int32.Parse(webViewConfig["ColumnSpan"].Value<string>());
+                    }
+                    catch
+                    {
+                        MessageBox.Show("ColumnSpan number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        this.Close();
+                        return;
+                    }
+                }
 
                 WebView2 webView = new WebView2();
-                webView.Source = new Uri(url);
+                webView.Source = uri;
                 dynamicGrid.Children.Add(webView);
 
                 Grid.SetRow(webView, row);
                 Grid.SetColumn(webView, column);
+
+                Grid.SetRowSpan(webView, rowSpan);
+                Grid.SetColumnSpan(webView, columnSpan);
             }
         }
     }
