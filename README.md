@@ -11,6 +11,7 @@ MultiWebView is a simple, fast, and configurable application for Windows which a
 
 ## Features
 
+- Unlimited selectable configurations
 - Unlimited configurable rows and columns.
 - Automatic sizing of webviews to fill window.
 - Configure any url to be rendered.

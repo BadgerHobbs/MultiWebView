@@ -24,20 +24,24 @@ namespace MultiWebView
         public MainWindow()
         {
             InitializeComponent();
+            this.Show();
 
-            JObject config;
-            try
+            List<string> configFiles = GetConfigFiles();
+
+            // If no config files exist, add default
+            if (configFiles.Count == 0)
             {
-                config = LoadConfigFile();
-            }
-            catch
-            {
-                MessageBox.Show("Error parsing config, please validate json format.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.Close();
-                return;
+                GenerateDefaultConfigFile();
+                configFiles = GetConfigFiles();
             }
 
-            CreateGridAsync(config);
+            CreateConfigFilesList(configFiles);
+
+            // If only one configuration, load it
+            if (configFiles.Count == 1)
+            {
+                LoadConfigAndGenerateGrid(configFiles[0]);
+            }
         }
 
         public JObject ConvertJsonStringToObject(string jsonString)
@@ -51,6 +55,11 @@ namespace MultiWebView
 
         private void GenerateDefaultConfigFile()
         {
+            if (File.Exists("config.json"))
+            {
+                return;
+            }
+
             dynamic config = new JObject();
             config.WebViews = new JArray();
             config.Rows = 1;
@@ -68,24 +77,91 @@ namespace MultiWebView
             File.WriteAllText("config.json", updatedConfigJson);
         }
 
-        public JObject LoadConfigFile()
+        public List<string> GetConfigFiles()
         {
-            if (!File.Exists("config.json"))
+            List<string> filePaths = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.json").ToList();
+
+            List<string> files = new List<string>();
+            foreach (string filePath in filePaths)
             {
-                GenerateDefaultConfigFile();
+                files.Add(System.IO.Path.GetFileName(filePath));
             }
 
-            string configJson = File.ReadAllText("config.json");
+            return files;
+        }
+
+        public void CreateConfigFilesList(List<string> configFiles)
+        {
+            for (int i = fileMenu.Items.Count - 1; i >= 0; i--)
+            {
+                fileMenu.Items.RemoveAt(i);
+            }
+            fileMenu.Items.Refresh();
+
+            foreach (string configFile in configFiles)
+            {
+                MenuItem menuItem = new MenuItem();
+                menuItem.Header = configFile;
+                fileMenu.Items.Add(configFile);
+            }
+        }
+
+        public void ConfigMenuOpened(object sender, RoutedEventArgs e)
+        {
+            List<string> configFiles = GetConfigFiles();
+            CreateConfigFilesList(configFiles);
+        }
+
+        public void ConfigMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            LoadConfigAndGenerateGrid((e.OriginalSource as MenuItem).Header.ToString());
+        }
+
+        public void LoadConfigAndGenerateGrid(string fileName)
+        {
+            JObject config;
+            try
+            {
+                config = LoadConfigFile(fileName);
+            }
+            catch
+            {
+                MessageBox.Show("Error parsing config, please validate json format.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            CreateGridAsync(config);
+        }
+
+        public JObject LoadConfigFile(string fileName)
+        {
+            string configJson = File.ReadAllText(fileName);
 
             return ConvertJsonStringToObject(configJson);
         }
 
+        public void DeleteGrid()
+        {
+            dynamicGrid.Children.RemoveRange(0, dynamicGrid.Children.Count);
+
+            if (dynamicGrid.ColumnDefinitions.Count > 0)
+            {
+                dynamicGrid.ColumnDefinitions.RemoveRange(0, dynamicGrid.ColumnDefinitions.Count);
+            }
+
+            if (dynamicGrid.RowDefinitions.Count > 0)
+            {
+                dynamicGrid.RowDefinitions.RemoveRange(0, dynamicGrid.RowDefinitions.Count);
+            }
+        }
+
         public void CreateGridAsync(JObject config)
         {
+            DeleteGrid();
+
             if (config["WebViews"] == null)
             {
                 MessageBox.Show("WebViews required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.Close();
                 return;
             }
 
@@ -98,7 +174,6 @@ namespace MultiWebView
                 catch
                 {
                     MessageBox.Show("ShowGridLines configured must be a bool.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }                
             }
@@ -107,7 +182,6 @@ namespace MultiWebView
             if (config["Columns"] == null)
             {
                 MessageBox.Show("Number of colums required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.Close();
                 return;
             }
             else
@@ -119,7 +193,6 @@ namespace MultiWebView
                 catch
                 {
                     MessageBox.Show("Number of columns configured must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
             }
@@ -128,7 +201,6 @@ namespace MultiWebView
             if (config["Rows"] == null)
             {
                 MessageBox.Show("Number of rows required in config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.Close();
                 return;
             }
             else
@@ -140,7 +212,6 @@ namespace MultiWebView
                 catch
                 {
                     MessageBox.Show("Number of rows configured must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
             }
@@ -166,7 +237,6 @@ namespace MultiWebView
                 if (webViewConfig["Url"] == null)
                 {
                     MessageBox.Show("Url required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
 
@@ -178,7 +248,6 @@ namespace MultiWebView
                 catch
                 {
                     MessageBox.Show("Url configured for webview must be in a valid format.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
 
@@ -187,7 +256,6 @@ namespace MultiWebView
                 if (webViewConfig["Row"] == null)
                 {
                     MessageBox.Show("Row number required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
                 else
@@ -199,7 +267,6 @@ namespace MultiWebView
                     catch
                     {
                         MessageBox.Show("Row number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Close();
                         return;
                     }
                 }
@@ -208,7 +275,6 @@ namespace MultiWebView
                 if (webViewConfig["Column"] == null)
                 {
                     MessageBox.Show("Column number required for webview config.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    this.Close();
                     return;
                 }
                 else
@@ -220,7 +286,6 @@ namespace MultiWebView
                     catch
                     {
                         MessageBox.Show("Column number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Close();
                         return;
                     }
                 }
@@ -235,7 +300,6 @@ namespace MultiWebView
                     catch
                     {
                         MessageBox.Show("RowSpan number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Close();
                         return;
                     }
                 }
@@ -250,7 +314,6 @@ namespace MultiWebView
                     catch
                     {
                         MessageBox.Show("ColumnSpan number configured for webview must be an int.", "Config error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Close();
                         return;
                     }
                 }

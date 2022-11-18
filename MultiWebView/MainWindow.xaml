@@ -7,7 +7,15 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="MultiWebView" Height="450" Width="800">
-    <Grid Name="dynamicGrid">
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Name="menu">
+            <MenuItem Header="Config Files" Name="fileMenu" Click="ConfigMenuItemClick" SubmenuOpened="ConfigMenuOpened">
+            </MenuItem>
+        </Menu>
+
+        <Grid Name="dynamicGrid">
+        </Grid>
         
-    </Grid>
+    </DockPanel>
 </Window>
